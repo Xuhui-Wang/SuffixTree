@@ -188,47 +188,55 @@ public class SuffixArrayMatching {
         return newClass;
     }
 
-    public List<Integer> findOccurrences(String pattern, String text, int[] suffixArray) {
-        List<Integer> result = new ArrayList<Integer>();          // find the first and last suffixArray whose prefix is pattern.
+    public void findOccurrences(String pattern, String text, int[] suffixArray, boolean[] occurs) {
+//        List<Integer> result = new ArrayList<Integer>();          // find the first and last suffixArray whose prefix is pattern.
         int firstContains = Integer.MAX_VALUE, lastContains = Integer.MIN_VALUE;
         int lo = 0, hi = L - 1;
-        while (lo + 1 < hi) {
+        while (lo <= hi) {
             int mid = lo + (hi - lo) / 2;
             int compare = toCompare(pattern, text, suffixArray[mid]);
             if (compare > 0)
                 lo = mid + 1;
-            else if (compare == 0)
-                hi = mid;
+            else if (compare == 0) {
+                firstContains = mid;
+                hi = mid - 1;
+            }
+             
             else
                 hi = mid - 1;
         }
-        for (int i = hi; i >= lo; i--)
-            if (toCompare(pattern, text, suffixArray[i]) == 0)
-                firstContains = i;
-        
+//        for (int i = hi; i >= lo; i--)
+//            if (toCompare(pattern, text, suffixArray[i]) == 0)
+//                firstContains = i;
+        if (firstContains == Integer.MAX_VALUE)
+            return;        
         lo = 0;
         hi = L - 1;
-        while (lo + 1 < hi) {
+        while (lo <= hi) {
             int mid = lo + (hi - lo) / 2;
             int compare = toCompare(pattern, text, suffixArray[mid]);
             if (compare > 0)
                 lo = mid + 1;
-            else if (compare == 0)
-                lo = mid;
+            else if (compare == 0) {
+                lastContains = mid;
+                lo = mid + 1;
+            }
             else
                 hi = mid - 1;
         }
-        for (int i = lo; i <= hi; i++)
-            if (toCompare(pattern, text, suffixArray[i]) == 0)
-                lastContains = i;
-        if (firstContains == Integer.MAX_VALUE || lastContains == Integer.MIN_VALUE)
-            return result;
+//        for (int i = lo; i <= hi; i++)
+//            if (toCompare(pattern, text, suffixArray[i]) == 0)
+//                lastContains = i;
+        if (lastContains == Integer.MIN_VALUE)
+            return;
         for (int i = firstContains; i <= lastContains; i++)
-            result.add(suffixArray[i]);
-        return result;
+            occurs[suffixArray[i]] = true;
+
+
     }
 
     public int toCompare(String pattern, String text, int position) {
+//        L = text.length();
         if (position + pattern.length() > L)
             return 1;
         for (int i = 0; i < pattern.length(); i++)
@@ -262,10 +270,7 @@ public class SuffixArrayMatching {
         boolean[] occurs = new boolean[text.length()];
         for (int patternIndex = 0; patternIndex < patternCount; ++patternIndex) {
             String pattern = scanner.next();
-            List<Integer> occurrences = findOccurrences(pattern, text, suffixArray);
-            for (int x : occurrences) {
-                occurs[x] = true;
-            }
+            findOccurrences(pattern, text, suffixArray, occurs);
         }
         print(occurs);
     }
